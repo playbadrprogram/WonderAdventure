@@ -1,49 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>عالم المغامرات العجيب</title>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;background:#111936;color:white;
- font-family:Tahoma,Arial;text-align:center;
-}
-#app{max-width:900px;margin:auto;padding:12px}
-h1{color:#ffe66d;font-size:clamp(25px,5vw,40px)}
-.panel{
- background:#202d55;border:2px solid #6878ba;
- border-radius:20px;padding:18px;margin:12px auto;
-}
-button{
- border:0;border-radius:14px;padding:13px 18px;
- margin:5px;background:#ffca45;color:#332044;
- font-size:17px;font-weight:bold;cursor:pointer;
-}
-button:active{transform:scale(.96)}
+body{margin:0;background:#111936;color:white;font-family:Tahoma,Arial;text-align:center}
+#app{max-width:950px;margin:auto;padding:10px}
+h1{color:#ffe66d;font-size:clamp(24px,5vw,40px)}
+.panel{background:#202d55;border:2px solid #6878ba;border-radius:20px;padding:16px;margin:12px auto}
+button{border:0;border-radius:13px;padding:12px 17px;margin:5px;background:#ffca45;color:#332044;font-size:16px;font-weight:bold;cursor:pointer}
 .secondary{background:#55d6be}
-.character{
- display:inline-block;background:#344475;
- padding:14px;margin:8px;border:3px solid transparent;
- border-radius:18px;width:140px;
-}
+.character{display:inline-block;background:#344475;padding:12px;margin:8px;border:3px solid transparent;border-radius:17px;width:140px}
 .character.selected{border-color:#ffe66d}
-.avatar{font-size:65px;display:block}
-input[type=file]{width:100%;font-size:12px;margin-top:8px}
+.avatar{font-size:60px;display:block}
 #gameArea{display:none}
 #hud{display:flex;justify-content:space-around;flex-wrap:wrap;gap:7px;margin:10px}
 .stat{background:#344475;padding:9px;border-radius:12px}
-canvas{
- width:100%;height:auto;display:block;
- border:4px solid #ffe66d;border-radius:15px;
- touch-action:none;
-}
-#controls{display:flex;justify-content:space-between;margin-top:12px}
+canvas{width:100%;height:auto;display:block;border:4px solid #ffe66d;border-radius:15px;touch-action:none}
+#controls{display:flex;justify-content:space-between;margin-top:10px}
 .pad{display:flex;gap:8px}
-.control{font-size:25px;width:65px;height:60px;background:#55d6be}
-#message{color:#ffe66d;min-height:28px;padding:8px}
+.control{font-size:25px;width:65px;height:60px;background:#55d6be;touch-action:none}
+#message{color:#ffe66d;min-height:30px;padding:7px}
+input[type=file]{width:100%;font-size:11px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -52,7 +32,7 @@ canvas{
 
 <section id="menu" class="panel">
 <h2>مرحباً بك في عالم المغامرات!</h2>
-<p>اختر شخصيتك وابدأ الرحلة.</p>
+<p>اختر بطلك وابدأ رحلة البحث عن الكنوز.</p>
 
 <div>
  <div class="character selected" id="saraCard" onclick="choose('sara')">
@@ -69,20 +49,22 @@ canvas{
 
 <p>🏆 أفضل نتيجة: <span id="best">0</span></p>
 <button onclick="startGame()">🚀 ابدأ اللعب</button>
-<p><small>اختر صورتك الحقيقية من الهاتف إن أردت.</small></p>
+<p><small>يمكنك رفع الصور الحقيقية من هاتفك.</small></p>
 </section>
 
 <section id="gameArea">
 <div id="hud">
- <div class="stat">🌍 <span id="worldName">الغابة</span></div>
+ <div class="stat">🌍 <span id="worldName"></span></div>
  <div class="stat">⭐ <span id="score">0</span></div>
  <div class="stat">❤️ <span id="lives">3</span></div>
  <div class="stat">المستوى <span id="level">1</span></div>
  <button class="secondary" onclick="pauseGame()">⏸</button>
  <button class="secondary" onclick="toggleSound()" id="soundBtn">🔊</button>
 </div>
+
 <canvas id="game" width="900" height="480"></canvas>
 <div id="message">اجمع النجوم وتجنب الوحوش!</div>
+
 <div id="controls">
  <div class="pad">
   <button class="control" id="right">➡️</button>
@@ -99,12 +81,17 @@ const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const W=900,H=480;
 
-let selected="sara",images={sara:null,mohammed:null};
-let score=0,lives=3,level=1,best=Number(localStorage.adventureBest||0);
+let selected="sara";
+let images={sara:null,mohammed:null};
+let score=0,lives=3,level=1;
+let best=Number(localStorage.adventureBest||0);
+
 let running=false,paused=false,sound=true;
 let player,stars,enemies,platforms,portal;
+let cameraX=0,worldWidth=3000;
 let keys={left:false,right:false};
-let audio=null,lastTime=0,frame=0,musicTimer=null;
+let audio=null,musicTimer=null;
+let lastTime=0,frame=0;
 
 document.getElementById("best").textContent=best;
 
@@ -139,32 +126,48 @@ function uploadImage(event,name){
 });
 
 function audioInit(){
- if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();
+ if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();
  if(audio.state==="suspended")audio.resume();
 }
+
 function tone(freq,duration=.15,type="sine",vol=.1){
  if(!sound)return;
  audioInit();
- const osc=audio.createOscillator(),gain=audio.createGain();
- osc.type=type;osc.frequency.value=freq;
+ const osc=audio.createOscillator();
+ const gain=audio.createGain();
+ osc.type=type;
+ osc.frequency.value=freq;
  gain.gain.setValueAtTime(vol,audio.currentTime);
  gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);
- osc.connect(gain);gain.connect(audio.destination);
- osc.start();osc.stop(audio.currentTime+duration);
+ osc.connect(gain);
+ gain.connect(audio.destination);
+ osc.start();
+ osc.stop(audio.currentTime+duration);
 }
+
 function effect(type){
- if(type==="jump"){tone(400);setTimeout(()=>tone(650),70)}
- if(type==="coin"){tone(800);setTimeout(()=>tone(1100),80)}
- if(type==="hit")tone(120,.3,"sawtooth");
- if(type==="win"){[523,659,784,1046].forEach((n,i)=>setTimeout(()=>tone(n,.3),i*130))}
- if(type==="lose"){[400,300,200].forEach((n,i)=>setTimeout(()=>tone(n,.3),i*180))}
+ if(type==="jump"){
+  tone(420);setTimeout(()=>tone(650),70);
+ }
+ if(type==="coin"){
+  tone(800);setTimeout(()=>tone(1100),80);
+ }
+ if(type==="hit")tone(130,.3,"sawtooth");
+ if(type==="win"){
+  [523,659,784,1046].forEach((n,i)=>setTimeout(()=>tone(n,.3),i*130));
+ }
+ if(type==="lose"){
+  [400,300,200].forEach((n,i)=>setTimeout(()=>tone(n,.3),i*180));
+ }
 }
+
 function toggleSound(){
  sound=!sound;
  document.getElementById("soundBtn").textContent=sound?"🔊":"🔇";
- if(sound){audioInit();tone(600)}
+ if(sound){audioInit();tone(600);}
  startMusic();
 }
+
 function startMusic(){
  stopMusic();
  if(!sound)return;
@@ -174,6 +177,7 @@ function startMusic(){
   if(running&&!paused&&sound)tone(notes[i++%notes.length],.22,"sine",.025);
  },420);
 }
+
 function stopMusic(){
  if(musicTimer)clearInterval(musicTimer);
  musicTimer=null;
@@ -189,168 +193,347 @@ function world(){
 }
 
 function makeLevel(){
+ worldWidth=3000+(level-1)*350;
+ cameraX=0;
+
  platforms=[
-  {x:0,y:420,w:900,h:60},
-  {x:160,y:335,w:150,h:18},
-  {x:390,y:280,w:145,h:18},
-  {x:640,y:335,w:145,h:18}
+  {x:0,y:420,w:worldWidth,h:60},
+  {x:230,y:340,w:150,h:18},
+  {x:510,y:285,w:160,h:18},
+  {x:850,y:345,w:160,h:18},
+  {x:1150,y:300,w:170,h:18},
+  {x:1500,y:340,w:160,h:18},
+  {x:1850,y:280,w:170,h:18},
+  {x:2200,y:340,w:180,h:18},
+  {x:2580,y:290,w:170,h:18}
  ];
+
  stars=[];
- for(let i=0;i<7+level;i++){
-  stars.push({x:100+(i*113)%700,y:[365,295,240,300,370][i%5],got:false});
+ const positions=[
+  [120,370],[280,305],[570,245],[900,310],
+  [1200,260],[1550,305],[1900,240],
+  [2250,300],[2630,250],[worldWidth-250,365]
+ ];
+ positions.forEach((p,i)=>{
+  stars.push({x:p[0],y:p[1],got:false});
+ });
+ for(let i=0;i<level;i++){
+  stars.push({x:700+i*250,y:370,got:false});
  }
+
  enemies=[];
- for(let i=0;i<Math.min(2+level,6);i++){
-  enemies.push({x:230+i*115,y:390,w:32,h:30,min:180+i*90,max:330+i*90,dir:1,speed:1+level*.2});
+ for(let i=0;i<Math.min(3+level,8);i++){
+  const x=430+i*330;
+  enemies.push({
+   x:x,y:390,w:35,h:30,
+   min:x-65,max:x+100,
+   dir:1,speed:1.1+level*.12
+  });
  }
- portal={x:820,y:340,w:48,h:80};
- player={x:45,y:350,w:42,h:55,vx:0,vy:0,onGround:false,invulnerable:0};
+
+ portal={x:worldWidth-125,y:340,w:55,h:80};
+
+ player={
+  x:45,y:350,w:44,h:60,
+  vx:0,vy:0,onGround:false,invulnerable:0
+ };
+
  updateHUD();
 }
 
-function startGame(){
- audioInit();
- score=0;lives=3;level=1;paused=false;running=true;
- document.getElementById("menu").style.display="none";
- document.getElementById("gameArea").style.display="block";
- makeLevel();startMusic();
- lastTime=performance.now();
- requestAnimationFrame(loop);
-}
 function updateHUD(){
  document.getElementById("score").textContent=score;
  document.getElementById("lives").textContent=lives;
  document.getElementById("level").textContent=level;
  document.getElementById("worldName").textContent=world().name;
 }
-function collide(a,b){
- return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+
+function startGame(){
+ audioInit();
+ score=0;lives=3;level=1;
+ paused=false;running=true;
+ document.getElementById("menu").style.display="none";
+ document.getElementById("gameArea").style.display="block";
+ makeLevel();
+ startMusic();
+ lastTime=performance.now();
+ requestAnimationFrame(loop);
 }
+
+function collide(a,b){
+ return a.x<b.x+b.w&&a.x+a.w>b.x&&
+ a.y<b.y+b.h&&a.y+a.h>b.y;
+}
+
 function update(dt){
- player.vx=keys.right?4.2:keys.left?-4.2:0;
- player.x=Math.max(0,Math.min(W-player.w,player.x+player.vx*dt));
+ const previousBottom=player.y+player.h;
+
+ player.vx=keys.right?4.5:keys.left?-4.5:0;
+ player.x+=player.vx*dt;
+ player.x=Math.max(0,Math.min(worldWidth-player.w,player.x));
+
  player.vy+=.48*dt;
  player.y+=player.vy*dt;
  player.onGround=false;
 
  for(const p of platforms){
-  if(player.vy>=0&&player.x+player.w>p.x&&player.x<p.x+p.w&&
-     player.y+player.h>=p.y&&player.y+player.h<=p.y+20){
-   player.y=p.y-player.h;player.vy=0;player.onGround=true;
+  if(player.vy>=0&&
+     player.x+player.w>p.x&&
+     player.x<p.x+p.w&&
+     previousBottom<=p.y+8&&
+     player.y+player.h>=p.y){
+   player.y=p.y-player.h;
+   player.vy=0;
+   player.onGround=true;
   }
  }
- if(player.y>H+50){hurt();return}
+
+ if(player.y>H+100){
+  hurt();
+  return;
+ }
+
  for(const s of stars){
-  if(!s.got&&Math.abs(player.x+player.w/2-s.x)<27&&Math.abs(player.y+player.h/2-s.y)<35){
-   s.got=true;score+=10;effect("coin");updateHUD();
+  if(!s.got&&
+    Math.abs(player.x+player.w/2-s.x)<28&&
+    Math.abs(player.y+player.h/2-s.y)<35){
+   s.got=true;
+   score+=10;
+   effect("coin");
+   updateHUD();
   }
  }
+
  for(const e of enemies){
   e.x+=e.dir*e.speed*dt;
   if(e.x<e.min||e.x>e.max)e.dir*=-1;
-  if(player.invulnerable<=0&&collide(player,e)){hurt();if(!running)return}
+
+  if(player.invulnerable<=0&&collide(player,e)){
+   hurt();
+   if(!running)return;
+  }
  }
+
  if(player.invulnerable>0)player.invulnerable-=dt;
+
+ // الكاميرا تتابع اللاعب داخل العالم
+ const target=player.x-W*.38;
+ cameraX=Math.max(0,Math.min(worldWidth-W,target));
+
+ // الوصول إلى بوابة نهاية المرحلة
  if(collide(player,portal)){
   if(stars.every(s=>s.got)){
-   score+=50;level++;makeLevel();effect("win");
-   document.getElementById("message").textContent="رائع! انتقلت إلى عالم جديد 🎉";
+   nextLevel();
   }else{
-   document.getElementById("message").textContent="اجمع كل النجوم أولاً ⭐";
+   document.getElementById("message").textContent=
+    "اجمع جميع النجوم قبل دخول البوابة! ⭐";
   }
  }
 }
+
 function hurt(){
- lives--;player.invulnerable=100;
- effect("hit");updateHUD();
- player.x=45;player.y=300;player.vy=0;
+ lives--;
+ player.invulnerable=100;
+ effect("hit");
+ updateHUD();
+ player.x=Math.max(0,cameraX+100);
+ player.y=300;
+ player.vy=0;
  document.getElementById("message").textContent="انتبه! اصطدمت بعقبة!";
- if(lives<=0)endGame(false);
+ if(lives<=0)endGame();
 }
-function endGame(won){
- running=false;stopMusic();
- effect(won?"win":"lose");
+
+function nextLevel(){
+ score+=50;
+ level++;
+ effect("win");
+ makeLevel();
+ document.getElementById("message").textContent=
+  "رائع! لقد وصلت إلى عالم جديد! 🎉";
+}
+
+function endGame(){
+ running=false;
+ stopMusic();
+ effect("lose");
  if(score>best){
-  best=score;localStorage.adventureBest=best;
+  best=score;
+  localStorage.adventureBest=best;
   document.getElementById("best").textContent=best;
  }
- document.getElementById("message").textContent=won?"مبروك! لقد فزت 🏆":"انتهت المحاولات! حاول مجدداً.";
+ document.getElementById("message").textContent=
+  "انتهت المحاولات! نتيجتك: "+score;
  setTimeout(()=>{
   if(!running&&document.getElementById("gameArea").style.display!=="none"){
-   if(confirm("نتيجتك "+score+" نقطة. هل تريد اللعب مجدداً؟"))startGame();
+   if(confirm("هل تريد اللعب من جديد؟"))startGame();
   }
  },500);
 }
+
 function pauseGame(){
  if(!running)return;
  paused=!paused;
- document.getElementById("message").textContent=paused?"اللعبة متوقفة مؤقتاً":"أكمل المغامرة!";
- if(!paused){lastTime=performance.now();requestAnimationFrame(loop)}
+ document.getElementById("message").textContent=
+  paused?"اللعبة متوقفة مؤقتاً":"أكمل المغامرة!";
+ if(!paused){
+  lastTime=performance.now();
+  requestAnimationFrame(loop);
+ }
 }
-function draw(){
+
+function drawBackground(){
  const w=world();
- ctx.fillStyle=w.sky;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle=w.sky;
+ ctx.fillRect(0,0,W,H);
+
+ // السحب تتحرك ببطء مع الكاميرا
  ctx.fillStyle="#ffffff99";
- for(let i=0;i<5;i++){
-  let x=(i*210+frame*.15)%1000-50,y=80+i%2*35;
-  ctx.beginPath();ctx.arc(x,y,24,0,7);ctx.arc(x+25,y-2,30,0,7);ctx.arc(x+55,y+5,22,0,7);ctx.fill();
+ for(let i=0;i<15;i++){
+  const x=((i*240-cameraX*.25)%(W+100)+W+100)%(W+100)-50;
+  const y=65+(i%3)*45;
+  ctx.beginPath();
+  ctx.arc(x,y,22,0,Math.PI*2);
+  ctx.arc(x+25,y-4,28,0,Math.PI*2);
+  ctx.arc(x+53,y+4,21,0,Math.PI*2);
+  ctx.fill();
  }
+
+ // الجبال البعيدة
  ctx.fillStyle=w.hill;
- for(let i=0;i<6;i++){
-  ctx.beginPath();ctx.arc(i*190,420,110,Math.PI,Math.PI*2);ctx.fill();
+ for(let i=0;i<12;i++){
+  const x=i*230-cameraX*.4;
+  ctx.beginPath();
+  ctx.arc(x,420,115,Math.PI,Math.PI*2);
+  ctx.fill();
  }
+}
+
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ drawBackground();
+
+ // نقل الرسم إلى إحداثيات العالم
+ ctx.save();
+ ctx.translate(-cameraX,0);
+
+ const w=world();
+
  for(const p of platforms){
-  ctx.fillStyle=w.ground;ctx.fillRect(p.x,p.y,p.w,p.h);
-  ctx.fillStyle="#ffffff55";ctx.fillRect(p.x,p.y,p.w,5);
+  ctx.fillStyle=w.ground;
+  ctx.fillRect(p.x,p.y,p.w,p.h);
+  ctx.fillStyle="#ffffff55";
+  ctx.fillRect(p.x,p.y,p.w,5);
  }
+
+ // النجوم
  ctx.textAlign="center";
- for(const s of stars)if(!s.got){ctx.font="29px Arial";ctx.fillText("⭐",s.x,s.y)}
- for(const e of enemies){ctx.font="32px Arial";ctx.fillText("👾",e.x,e.y+25)}
- ctx.font="48px Arial";ctx.fillText("🚪",portal.x+22,portal.y+49);
+ for(const s of stars){
+  if(!s.got){
+   ctx.font="29px Arial";
+   ctx.fillText("⭐",s.x,s.y);
+  }
+ }
+
+ // الأعداء
+ for(const e of enemies){
+  ctx.font="34px Arial";
+  ctx.fillText("👾",e.x+e.w/2,e.y+27);
+ }
+
+ // بوابة نهاية المرحلة
+ ctx.font="52px Arial";
+ ctx.fillText("🚪",portal.x+portal.w/2,portal.y+55);
+
+ // الشخصية
  if(images[selected]){
   ctx.save();
-  if(player.invulnerable>0&&Math.floor(player.invulnerable/8)%2===0)ctx.globalAlpha=.3;
+  if(player.invulnerable>0&&Math.floor(player.invulnerable/8)%2===0)
+   ctx.globalAlpha=.35;
   ctx.drawImage(images[selected],player.x,player.y,player.w,player.h);
   ctx.restore();
  }else{
-  ctx.font="43px Arial";
-  ctx.fillText(selected==="sara"?"👧":"👦",player.x+player.w/2,player.y+player.h-2);
+  ctx.font="45px Arial";
+  ctx.fillText(selected==="sara"?"👧":"👦",
+   player.x+player.w/2,player.y+player.h-3);
  }
+
+ ctx.restore();
+
+ // مؤشر التقدم
+ const progress=player.x/worldWidth;
+ ctx.fillStyle="#ffffff88";
+ ctx.fillRect(15,12,W-30,7);
+ ctx.fillStyle="#ffe45c";
+ ctx.fillRect(15,12,(W-30)*progress,7);
 }
+
 function loop(now){
  if(!running||paused)return;
  const dt=Math.min((now-lastTime)/16.67,2.5);
- lastTime=now;frame++;
- update(dt);draw();
+ lastTime=now;
+ frame++;
+ update(dt);
+ draw();
  if(running)requestAnimationFrame(loop);
 }
+
 function jump(){
  if(running&&!paused&&player.onGround){
-  player.vy=-11.5;player.onGround=false;effect("jump");
+  player.vy=-11.5;
+  player.onGround=false;
+  effect("jump");
  }
 }
+
 function bindButton(id,key){
  const b=document.getElementById(id);
- b.addEventListener("pointerdown",e=>{e.preventDefault();keys[key]=true});
- ["pointerup","pointercancel","pointerleave"].forEach(ev=>b.addEventListener(ev,()=>keys[key]=false));
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  keys[key]=true;
+ });
+ ["pointerup","pointercancel","pointerleave"].forEach(ev=>{
+  b.addEventListener(ev,()=>keys[key]=false);
+ });
 }
-bindButton("left","left");bindButton("right","right");
-document.getElementById("jump").addEventListener("pointerdown",e=>{e.preventDefault();jump()});
+
+bindButton("left","left");
+bindButton("right","right");
+
+document.getElementById("jump").addEventListener("pointerdown",e=>{
+ e.preventDefault();
+ jump();
+});
+
 window.addEventListener("keydown",e=>{
  if(e.key==="ArrowLeft"||e.key==="a")keys.left=true;
  if(e.key==="ArrowRight"||e.key==="d")keys.right=true;
- if(e.key==="ArrowUp"||e.key===" "){e.preventDefault();jump()}
+ if(e.key==="ArrowUp"||e.key===" "){
+  e.preventDefault();
+  jump();
+ }
 });
+
 window.addEventListener("keyup",e=>{
  if(e.key==="ArrowLeft"||e.key==="a")keys.left=false;
  if(e.key==="ArrowRight"||e.key==="d")keys.right=false;
 });
+
+window.addEventListener("blur",()=>{
+ keys.left=false;
+ keys.right=false;
+});
+
 function backToMenu(){
- running=false;paused=false;stopMusic();
+ running=false;
+ paused=false;
+ stopMusic();
+ keys.left=false;
+ keys.right=false;
  document.getElementById("gameArea").style.display="none";
  document.getElementById("menu").style.display="block";
 }
-draw();
+
+drawBackground();
 </script>
 </body>
 </html>
