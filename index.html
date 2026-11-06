@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>عالم المغامرات العجيب - النسخة المطورة</title>
+<title>عالم المغامرات العجيب</title>
+
+<!-- Vercel Web Analytics Script -->
+<script defer src="/_vercel/insights/script.js"></script>
+
 <style>
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -57,7 +61,7 @@ canvas{display:block;width:100%;height:100%;background:#000}
  <div class="bgrow">🖼️ خلفية حقيقية لكل مرحلة من صورك:<br><label class="mini" id="bl0">١<input type="file" accept="image/*" data-bg="0"></label><label class="mini" id="bl1">٢<input type="file" accept="image/*" data-bg="1"></label><label class="mini" id="bl2">٣<input type="file" accept="image/*" data-bg="2"></label><label class="mini" id="bl3">٤<input type="file" accept="image/*" data-bg="3"></label><button id="bgreset" style="border:0;border-radius:10px;padding:7px 10px;margin:4px">مسح</button></div>
  
  <div style="margin: 10px 0;">
-  <button id="menuMute" style="padding: 8px 16px; border-radius: 15px; border: none; background: #2c6f63; color: #fff; font-weight: bold;">🔊 الصوت: مفعل</button>
+  <button id="menuSoundBtn" style="padding: 10px 20px; border-radius: 20px; border: 2px solid #8ce7bd; background: #2c6f63; color: #fff; font-weight: bold; font-size: 15px;">🔊 تفعيل الصوت والموسيقى</button>
  </div>
 
  <button class="mainbtn" id="start">ابدأ المغامرة ▶</button>
@@ -528,7 +532,7 @@ function stopMusic(){clearInterval(mTimer);mTimer=null}
 
 const updateMuteUI = () => {
  $("mute").textContent = muted ? "🔇" : "🔊";
- $("menuMute").textContent = muted ? "🔇 الصوت: معطل" : "🔊 الصوت: مفعل";
+ $("menuSoundBtn").textContent = muted ? "🔇 الصوت: معطل (اضغط للتفعيل)" : "🔊 الصوت والموسيقى: مفعلة";
  if(master) master.gain.value = muted ? 0 : 0.6;
 };
 
@@ -538,11 +542,12 @@ $("mute").onclick = () => {
  updateMuteUI();
 };
 
-$("menuMute").onclick = () => {
+$("menuSoundBtn").onclick = () => {
  initAudio();
  muted = !muted;
  store("wonderMute", muted ? "1" : "0");
  updateMuteUI();
+ sfx('coin');
 };
 
 updateMuteUI();
@@ -743,7 +748,7 @@ function endGame(won){
  if(score>best){best=score;store("wonderBest",best)}
  updateHUD();render();
  message.style.display="block";
- message.innerHTML=(won?"<h2>🏆 أحسنت! أنهيت كل المراحل!</h2><p>أنت بطل العالم العجيب.</p>":"<h2>💔 انتهت المحاولة!</h2><p>لا تستسلم، حاول مرة أخرى في نفس المرحلة.</p>")+"<h3>⭐ نقاطك: "+score+"</h3><button class='mainbtn' id='again'>إعادة المحاولة من نفس المرحلة</button><br><button class='mainbtn' id='home'>القائمة الرئيسية</button>";
+ message.innerHTML=(won?"<h2>🏆 أحسنت! أنهيت كل المراحل!</h2><p>أنت بطل العالم العجيب.</p>":"<h2>💔 انتهت المحاولة!</h2><p>لا تستسلم، استمر في نفس المرحلة.</p>")+"<h3>⭐ نقاطك: "+score+"</h3><button class='mainbtn' id='again'>إعادة المحاولة من نفس المرحلة</button><br><button class='mainbtn' id='home'>القائمة الرئيسية</button>";
  
  $("again").onclick=()=>{
   message.style.display="none";
