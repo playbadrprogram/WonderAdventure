@@ -183,6 +183,7 @@ $("start").onclick=()=>{initAudio();loadImage();menu.style.display="none";game.s
 
 function startGame(){player.ammo=10;score=0;coinCount=0;lives=3;level=0;gameOver=false;paused=false;between=false;startLevel();playing=true;lastTime=performance.now();requestAnimationFrame(loop)}
 function startLevel(){
+ initAudio();
  startMusic();build(level);cameraX=0;elapsed=0;banner=3.2;lastSafe=70;
  player.x=70;player.y=300;player.vx=0;player.vy=0;player.invincible=0;particles=[];shur=[];eproj=[];player.roll=0;player.atk=0;player.flipT=0;
  updateHUD();
@@ -287,9 +288,9 @@ const bgImgs=[null,null,null,null];
 const eb=e=>({x:e.x,y:e.y-e.jy,w:34,h:56});
 const SARA={skin:'#f1c3a0',shirt:'#e0507f',shirt2:'#8a2a4a',pants:'#3a2f55',hair:'#3b2430',band:'#ffd23a',belt:'#ffd23a'};
 const MOH={skin:'#e6b48c',shirt:'#3d82c6',shirt2:'#1f4a80',pants:'#26344d',hair:'#2f2623',band:'#e84141',belt:'#e8c241'};
-function doAttack(){if(!playing||paused||player.cd>0||player.roll>0)return;player.cd=.38;player.atk=.3;triggerShake(0.1, 4);sfx('slash')}
-function doThrow(){if(!playing||paused||player.tcd>0)return;if(player.ammo<=0){sfx('empty');return}player.ammo--;player.tcd=.28;shur.push({x:player.x+player.w/2,y:player.y+24,vx:player.facing*780,life:1.1,rot:0});sfx('throw');updateHUD()}
-function doRoll(){if(!playing||paused||player.rollcd>0||!player.onGround)return;player.roll=.45;player.rollcd=.9;sfx('roll')}
+function doAttack(){initAudio();if(!playing||paused||player.cd>0||player.roll>0)return;player.cd=.38;player.atk=.3;triggerShake(0.1, 4);sfx('slash')}
+function doThrow(){initAudio();if(!playing||paused||player.tcd>0)return;if(player.ammo<=0){sfx('empty');return}player.ammo--;player.tcd=.28;shur.push({x:player.x+player.w/2,y:player.y+24,vx:player.facing*780,life:1.1,rot:0});sfx('throw');updateHUD()}
+function doRoll(){initAudio();if(!playing||paused||player.rollcd>0||!player.onGround)return;player.roll=.45;player.rollcd=.9;sfx('roll')}
 const ACT={atk:doAttack,thr:doThrow,roll:doRoll};
 function hitEnemy(e,d){
  if(e.hitCd>0)return;
@@ -425,9 +426,18 @@ document.querySelectorAll('[data-bg]').forEach(inp=>inp.addEventListener('change
 }));
 for(let i=0;i<4;i++){const s=load('wonderBg'+i);if(s){const b=new Image();b.onload=()=>{bgImgs[i]=b;$('bl'+i).classList.add('ok')};b.src=s}}
 $('bgreset').onclick=()=>{for(let i=0;i<4;i++){try{localStorage.removeItem('wonderBg'+i)}catch(e){}bgImgs[i]=null;$('bl'+i).classList.remove('ok')}};
-function stn(f,t,d,type,v,f2){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(sb);o.start(t);o.stop(t+d+.05)}
-function nz(t,d,v,f,q){const s=AC.createBufferSource(),g=AC.createGain(),b=AC.createBiquadFilter();s.buffer=noiseBuf;b.type='bandpass';b.frequency.setValueAtTime(f,t);b.frequency.exponentialRampToValueAtTime(Math.max(200,f/3),t+d);b.Q.value=q||1;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(b);b.connect(g);g.connect(sb);s.start(t);s.stop(t+d)}
+function stn(f,t,d,type,v,f2){
+ if(!AC)return;
+ const o=AC.createOscillator(),g=AC.createGain();
+ o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+ g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(sb);o.start(t);o.stop(t+d+.05)
+}
+function nz(t,d,v,f,q){
+ if(!AC)return;
+ const s=AC.createBufferSource(),g=AC.createGain(),b=AC.createBiquadFilter();s.buffer=noiseBuf;b.type='bandpass';b.frequency.setValueAtTime(f,t);b.frequency.exponentialRampToValueAtTime(Math.max(200,f/3),t+d);b.Q.value=q||1;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(b);b.connect(g);g.connect(sb);s.start(t);s.stop(t+d)
+}
 function sfx(n){
+ initAudio();
  if(!AC||!noiseBuf)return;if(AC.state==='suspended')AC.resume();
  if(!sb){sb=AC.createGain();sb.gain.value=2.2;sb.connect(master)}
  const t=AC.currentTime+.01;
@@ -677,19 +687,31 @@ function endGame(won){
  if(score>best){best=score;store("wonderBest",best)}
  updateHUD();render();
  message.style.display="block";
- message.innerHTML=(won?"<h2>🏆 أحسنت! أنهيت كل المراحل!</h2><p>أنت بطل العالم العجيب.</p>":"<h2>💔 انتهت المحاولة!</h2><p>لا تستسلم، حاول مرة أخرى.</p>")+"<h3>⭐ نقاطك: "+score+"</h3><button class='mainbtn' id='again'>العب مرة أخرى</button><br><button class='mainbtn' id='home'>القائمة الرئيسية</button>";
- $("again").onclick=()=>{message.style.display="none";startGame()};
+ message.innerHTML=(won?"<h2>🏆 أحسنت! أنهيت كل المراحل!</h2><p>أنت بطل العالم العجيب.</p>":"<h2>💔 انتهت المحاولة!</h2><p>لا تستسلم، حاول مرة أخرى في نفس المرحلة.</p>")+"<h3>⭐ نقاطك: "+score+"</h3><button class='mainbtn' id='again'>إعادة المحاولة من نفس المرحلة</button><br><button class='mainbtn' id='home'>القائمة الرئيسية</button>";
+ 
+ $("again").onclick=()=>{
+  message.style.display="none";
+  lives=3; // استعادة القلوب
+  gameOver=false;
+  paused=false;
+  startLevel();
+  playing=true;
+  lastTime=performance.now();
+  requestAnimationFrame(loop);
+ };
+ 
  $("home").onclick=()=>{message.style.display="none";game.style.display="none";menu.style.display="flex"};
 }
 
 function setControl(id,key){
  const el=$(id);
- el.addEventListener("pointerdown",e=>{e.preventDefault();if(key==="jump")jumpPressed=true;else if(ACT[key])ACT[key]();else keys[key]=true;try{el.setPointerCapture(e.pointerId)}catch(err){}});
+ el.addEventListener("pointerdown",e=>{e.preventDefault();initAudio();if(key==="jump")jumpPressed=true;else if(ACT[key])ACT[key]();else keys[key]=true;try{el.setPointerCapture(e.pointerId)}catch(err){}});
  const rel=e=>{e.preventDefault();if(key!=="jump")keys[key]=false};
  el.addEventListener("pointerup",rel);el.addEventListener("pointercancel",rel);el.addEventListener("lostpointercapture",rel);
 }
 setControl("left","left");setControl("right","right");setControl("jump","jump");setControl("atk","atk");setControl("thr","thr");setControl("roll","roll");setControl("guard","guard");
 addEventListener("keydown",e=>{
+ initAudio();
  if(e.key==="ArrowLeft"||e.key==="a")keys.left=true;
  if(e.key==="ArrowRight"||e.key==="d")keys.right=true;
  if((e.key==="ArrowUp"||e.key===" "||e.key==="w")&&!e.repeat){jumpPressed=true;e.preventDefault()}
