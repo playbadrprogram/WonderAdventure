@@ -47,7 +47,7 @@ canvas{display:block;width:100%;height:100%;background:#000}
 <body>
 <div id="menu"><div class="panel">
  <h1>🌳 عالم المغامرات العجيب 🌳</h1>
- <div class="subtitle">٤ مراحل: غابة · صحراء · جليد · براكين (نسخة التحسينات البصرية)</div>
+ <div class="subtitle">٤ مراحل: غابة · صحراء · جليد · براكين</div>
  <h3>اختر بطلك للمغامرة</h3>
  <div class="characters">
   <button class="character selected" id="sara"><img class="avatar" id="saraImg" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='49' fill='%23f7c7a7'/%3E%3Ccircle cx='50' cy='38' r='23' fill='%23e9b38e'/%3E%3Cpath d='M25 40 Q20 0 55 12 Q88 15 75 57 L68 38 Q50 25 31 43Z' fill='%23452d36'/%3E%3Ccircle cx='42' cy='39' r='3'/%3E%3Ccircle cx='59' cy='39' r='3'/%3E%3Cpath d='M42 51 Q50 59 59 51' stroke='%23944' fill='none' stroke-width='2'/%3E%3Cpath d='M23 100 Q25 65 50 65 Q78 65 80 100' fill='%23e65c89'/%3E%3C/svg%3E">سارة 👧</button>
@@ -84,7 +84,7 @@ const $=id=>document.getElementById(id);
 const canvas=$("canvas"),ctx=canvas.getContext("2d"),menu=$("menu"),game=$("game"),message=$("message");
 const VH=540,FLOOR=440,TAU=Math.PI*2;
 let W=960,H=VH;
-let shakeTimer = 0, shakeIntensity = 0; // نظام اهتزاز الشاشة الجديد
+let shakeTimer = 0, shakeIntensity = 0;
 
 function triggerShake(duration, intensity) {
     shakeTimer = duration;
@@ -105,10 +105,10 @@ function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
 
 const TH=[
-{name:"الغابة السحرية",sky:[="#4fa9d6","#a9dfc9","#eee7b4"],sun:[.78,.2,"#fff6c0"],far:[="#5f9a93","#7fb5a4","#3f8466"],haze:"#dff5e0",top:"#4fae4a",top2:"#2f7d38",dirt:"#6b4730",dirt2:"#3f2818",liq:"#2c8fb8",spike:"#cfd8d2",en:[="#8c58c6","#c4694a","#5aa14f"],deco:"tree",w:"leaf",tint:"#ffffd0",cloud:"#fff"},
-{name:"صحراء الذهب",sky:[="#e0813f","#f6c57c","#fbe6b0"],sun:[.7,.34,"#fff0b0"],far:[="#c98f5a","#d9a870","#b9784a"],haze:"#fbe3b4",top:"#e8c779",top2:"#c99a50",dirt:"#c79a56",dirt2:"#8e6630",liq:"#a8793a",spike:"#8a6a45",en:[="#a8472f","#6a4b8a","#c28f2a"],deco:"cactus",w:"dust",tint:"#ffc070",cloud:"#fff3d8"},
-{name:"جبال الجليد",sky:[="#6e93be","#c8dcec","#f4f8fc"],sun:[.25,.22,"#ffffff"],far:[="#8fa9c6","#a9c0d8","#7c97b6"],haze:"#eef5fb",top:"#f8fbfe",top2:"#cfe2ef",dirt:"#7d9bb5",dirt2:"#4f6d89",liq:"#2f6592",spike:"#bfe8ff",en:[="#4a76b8","#7a8fc8","#3d9aa8"],deco:"pine",w:"snow",tint:"#c8e0ff",cloud:"#f4f8ff"},
-{name:"وادي البراكين",sky:[="#1d0a16","#5c1a1c","#d0502a"],sun:[.5,.78,"#ff9a40"],far:[="#2b1a22","#3a2024","#4d2523"],haze:"#ff7a3a",top:"#6b4030",top2:"#9a5028",dirt:"#3a2a2e",dirt2:"#1c1216",liq:"#ff5a1a",spike:"#8a2a2a",en:[="#d1432c","#7a2b6a","#e08a20"],deco:"dead",w:"ember",tint:"#ff6a30",cloud:"#2a1216"}
+{name:"الغابة السحرية",sky:["#4fa9d6","#a9dfc9","#eee7b4"],sun:[.78,.2,"#fff6c0"],far:["#5f9a93","#7fb5a4","#3f8466"],haze:"#dff5e0",top:"#4fae4a",top2:"#2f7d38",dirt:"#6b4730",dirt2:"#3f2818",liq:"#2c8fb8",spike:"#cfd8d2",en:["#8c58c6","#c4694a","#5aa14f"],deco:"tree",w:"leaf",tint:"#ffffd0",cloud:"#fff"},
+{name:"صحراء الذهب",sky:["#e0813f","#f6c57c","#fbe6b0"],sun:[.7,.34,"#fff0b0"],far:["#c98f5a","#d9a870","#b9784a"],haze:"#fbe3b4",top:"#e8c779",top2:"#c99a50",dirt:"#c79a56",dirt2:"#8e6630",liq:"#a8793a",spike:"#8a6a45",en:["#a8472f","#6a4b8a","#c28f2a"],deco:"cactus",w:"dust",tint:"#ffc070",cloud:"#fff3d8"},
+{name:"جبال الجليد",sky:["#6e93be","#c8dcec","#f4f8fc"],sun:[.25,.22,"#ffffff"],far:["#8fa9c6","#a9c0d8","#7c97b6"],haze:"#eef5fb",top:"#f8fbfe",top2:"#cfe2ef",dirt:"#7d9bb5",dirt2:"#4f6d89",liq:"#2f6592",spike:"#bfe8ff",en:["#4a76b8","#7a8fc8","#3d9aa8"],deco:"pine",w:"snow",tint:"#c8e0ff",cloud:"#f4f8ff"},
+{name:"وادي البراكين",sky:["#1d0a16","#5c1a1c","#d0502a"],sun:[.5,.78,"#ff9a40"],far:["#2b1a22","#3a2024","#4d2523"],haze:"#ff7a3a",top:"#6b4030",top2:"#9a5028",dirt:"#3a2a2e",dirt2:"#1c1216",liq:"#ff5a1a",spike:"#8a2a2a",en:["#d1432c","#7a2b6a","#e08a20"],deco:"dead",w:"ember",tint:"#ff6a30",cloud:"#2a1216"}
 ];
 
 let selected="sara",customPhoto=null,playerImage=null;
@@ -190,10 +190,9 @@ function startLevel(){
 function updateHUD(){$("score").textContent=score;$("coins").textContent=coinCount;$("lives").textContent=lives;$("best").textContent=best;$("lvl").textContent=level+1;$("ammo").textContent=player.ammo}
 function rectHit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
 
-// [تحسين بصري]: إضافة جسيمات متطورة ومضيئة عند النقاط والعملات
 function addScore(n,x,y){
  score+=n;
- triggerShake(0.12, 4); // اهتزاز خفيف عند النقاط العالية
+ triggerShake(0.12, 4);
  for(let i=0;i<12;i++) {
   particles.push({
    x, y,
@@ -210,7 +209,7 @@ function addScore(n,x,y){
 function hurt(){
  if(player.invincible>0||gameOver)return;
  lives--;sfx("hurt");player.invincible=1.6;player.vy=-400;player.vx=-player.facing*180;
- triggerShake(0.3, 10); // اهتزاز قوية للشاشة عند الإصابة
+ triggerShake(0.3, 10);
  updateHUD();
  if(lives<=0)endGame(false);
 }
@@ -220,7 +219,6 @@ function update(dt){
  elapsed+=dt;banner=Math.max(0,banner-dt);
  player.invincible=Math.max(0,player.invincible-dt);
  
- // تحديث اهتزاز الشاشة
  if(shakeTimer > 0) shakeTimer -= dt;
 
  const dir=(keys.right?1:0)-(keys.left?1:0);
@@ -255,11 +253,10 @@ function update(dt){
  if(rectHit(player,{x:portal.x,y:portal.y,w:60,h:96})){finishLevel();return}
  cameraX=Math.max(0,Math.min(WORLD-W,player.x-W*.36));
  
- // تحديث حركة الجسيمات البصرية
  for(const p of particles){
   p.x+=p.vx*dt;
   p.y+=p.vy*dt;
-  p.vy+=600*dt; // تأثير الجاذبية على الشرارات
+  p.vy+=600*dt;
   p.life-=dt;
  }
  particles=particles.filter(p=>p.life>0);
@@ -298,7 +295,6 @@ function hitEnemy(e,d){
  if(e.hitCd>0)return;
  e.hitCd=.3;e.hp-=d;e.kb=player.facing*320;
  triggerShake(0.12, 5);
- // [تحسين بصري]: إضافة شرارات قتال عند ضرب العدو
  for(let i=0;i<6;i++){
   particles.push({x: e.x+17, y: e.y+20, vx: (Math.random()-.5)*250, vy: (Math.random()-.5)*250, life: .4, color: '#fff', size: 2.5});
  }
@@ -565,7 +561,6 @@ function groundAt(x,y){let m=FLOOR+60;for(const p of platforms)if(x>p.x&&x<p.x+p
 function drawWorld(){
  ctx.save();
  
- // تطبيق اهتزاز الكاميرا البصري
  if(shakeTimer > 0) {
   const sx = (Math.random() - 0.5) * shakeIntensity;
   const sy = (Math.random() - 0.5) * shakeIntensity;
@@ -604,7 +599,6 @@ function drawWorld(){
   }
  }
  
- // [تحسين بصري]: توهج وبريق إضافي للعملات الذهبية
  for(const c of coins){
   if(c.got||c.x<x0||c.x>x1)continue;
   const sx=Math.cos(elapsed*4+c.id);
@@ -634,7 +628,6 @@ function drawWorld(){
  drawPlayer();
  drawProjectiles();
  
- // رسم الجسيمات البصرية المتطايرة بدقة
  for(const p of particles){
   ctx.globalAlpha=Math.max(0,p.life/.8);
   ctx.fillStyle=p.color || "#ffe77b";
@@ -708,7 +701,7 @@ addEventListener("keyup",e=>{
  if(e.key==="ArrowRight"||e.key==="d")keys.right=false;
  if(['z','l'].includes(e.key.toLowerCase()))keys.guard=false;
 });
-$("pause").onclick=(,e)=>{
+$("pause").onclick=()=>{
  if(!playing||gameOver||between)return;
  paused=!paused;$("pause").textContent=paused?"▶":"Ⅱ";if(AC){paused?AC.suspend():AC.resume()}
  if(paused){
