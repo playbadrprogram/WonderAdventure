@@ -55,6 +55,11 @@ canvas{display:block;width:100%;height:100%;background:#000}
  </div>
  <label class="upbtn">📷 اختر صورتك من الهاتف (تُحسَّن تلقائيًا)<input type="file" id="photo" accept="image/*"></label><div id="pstat"></div>
  <div class="bgrow">🖼️ خلفية حقيقية لكل مرحلة من صورك:<br><label class="mini" id="bl0">١<input type="file" accept="image/*" data-bg="0"></label><label class="mini" id="bl1">٢<input type="file" accept="image/*" data-bg="1"></label><label class="mini" id="bl2">٣<input type="file" accept="image/*" data-bg="2"></label><label class="mini" id="bl3">٤<input type="file" accept="image/*" data-bg="3"></label><button id="bgreset" style="border:0;border-radius:10px;padding:7px 10px;margin:4px">مسح</button></div>
+ 
+ <div style="margin: 10px 0;">
+  <button id="menuMute" style="padding: 8px 16px; border-radius: 15px; border: none; background: #2c6f63; color: #fff; font-weight: bold;">🔊 الصوت: مفعل</button>
+ </div>
+
  <button class="mainbtn" id="start">ابدأ المغامرة ▶</button>
  <div id="help">اجمع العملات، اقفز فوق الوحوش، وصل إلى بوابة كل مرحلة!</div>
 </div></div>
@@ -179,12 +184,22 @@ $("photo").addEventListener("change",e=>{
  $("pstat").textContent="⏳ جاري تحسين الصورة...";
  enhance(f,d=>{if(!d){$("pstat").textContent="⚠ تعذّر قراءة الصورة، جرّب صورة JPG أو PNG";return}customPhoto=d;$(selected==="sara"?"saraImg":"mohamedImg").src=d;$("pstat").textContent="✔ تم ضبط الصورة للاعب"});e.target.value="";
 });
-$("start").onclick=()=>{initAudio();loadImage();menu.style.display="none";game.style.display="block";resize();startGame()};
+
+$("start").onclick=()=>{
+ initAudio();
+ loadImage();
+ menu.style.display="none";
+ game.style.display="block";
+ resize();
+ startGame();
+};
 
 function startGame(){player.ammo=10;score=0;coinCount=0;lives=3;level=0;gameOver=false;paused=false;between=false;startLevel();playing=true;lastTime=performance.now();requestAnimationFrame(loop)}
 function startLevel(){
  initAudio();
- startMusic();build(level);cameraX=0;elapsed=0;banner=3.2;lastSafe=70;
+ startMusic();
+ build(level);
+ cameraX=0;elapsed=0;banner=3.2;lastSafe=70;
  player.x=70;player.y=300;player.vx=0;player.vy=0;player.invincible=0;particles=[];shur=[];eproj=[];player.roll=0;player.atk=0;player.flipT=0;
  updateHUD();
 }
@@ -426,6 +441,7 @@ document.querySelectorAll('[data-bg]').forEach(inp=>inp.addEventListener('change
 }));
 for(let i=0;i<4;i++){const s=load('wonderBg'+i);if(s){const b=new Image();b.onload=()=>{bgImgs[i]=b;$('bl'+i).classList.add('ok')};b.src=s}}
 $('bgreset').onclick=()=>{for(let i=0;i<4;i++){try{localStorage.removeItem('wonderBg'+i)}catch(e){}bgImgs[i]=null;$('bl'+i).classList.remove('ok')}};
+
 function stn(f,t,d,type,v,f2){
  if(!AC)return;
  const o=AC.createOscillator(),g=AC.createGain();
@@ -468,11 +484,28 @@ const MUS=[
 {bpm:122,root:164.81,sc:[0,2,3,5,7,8,10,12],lead:"sawtooth",bass:"square",arp:[0,3,4,3,5,4,2,1],bs:[0,0,0,0,5,5,4,4],drum:2}
 ];
 const fq=(r,s)=>r*Math.pow(2,s/12);
+
 function initAudio(){
- if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=muted?0:.5;master.connect(AC.destination);
-  noiseBuf=AC.createBuffer(1,AC.sampleRate*.2,AC.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}catch(e){AC=null}}
- if(AC&&AC.state==="suspended")AC.resume();
+ if(!AC){
+  try{
+   const AudioCtx = window.AudioContext || window.webkitAudioContext;
+   AC = new AudioCtx();
+   master = AC.createGain();
+   master.gain.value = muted ? 0 : 0.6;
+   master.connect(AC.destination);
+   
+   noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.2, AC.sampleRate);
+   const d = noiseBuf.getChannelData(0);
+   for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }catch(e){
+   AC = null;
+  }
+ }
+ if(AC && AC.state === "suspended"){
+  AC.resume();
+ }
 }
+
 function tone(f,t,d,type,v,f2){
  if(!AC)return;
  const o=AC.createOscillator(),g=AC.createGain();
@@ -493,8 +526,31 @@ function sched(){if(!AC||AC.state!=="running")return;while(nextT<AC.currentTime+
 function startMusic(){if(!AC)return;stopMusic();stepN=0;nextT=AC.currentTime+.15;mTimer=setInterval(sched,90)}
 function stopMusic(){clearInterval(mTimer);mTimer=null}
 
-$("mute").textContent=muted?"🔇":"🔊";
-$("mute").onclick=()=>{muted=!muted;store("wonderMute",muted?"1":"0");$("mute").textContent=muted?"🔇":"🔊";if(master)master.gain.value=muted?0:.5};
+const updateMuteUI = () => {
+ $("mute").textContent = muted ? "🔇" : "🔊";
+ $("menuMute").textContent = muted ? "🔇 الصوت: معطل" : "🔊 الصوت: مفعل";
+ if(master) master.gain.value = muted ? 0 : 0.6;
+};
+
+$("mute").onclick = () => {
+ muted = !muted;
+ store("wonderMute", muted ? "1" : "0");
+ updateMuteUI();
+};
+
+$("menuMute").onclick = () => {
+ initAudio();
+ muted = !muted;
+ store("wonderMute", muted ? "1" : "0");
+ updateMuteUI();
+};
+
+updateMuteUI();
+
+document.addEventListener("pointerdown", () => {
+ initAudio();
+}, { once: true });
+
 document.addEventListener("visibilitychange",()=>{if(!AC)return;if(document.hidden)AC.suspend();else if(!paused)AC.resume()});
 
 function ridge(col,base,amp,sp,seed){
@@ -691,7 +747,7 @@ function endGame(won){
  
  $("again").onclick=()=>{
   message.style.display="none";
-  lives=3; // استعادة القلوب
+  lives=3;
   gameOver=false;
   paused=false;
   startLevel();
